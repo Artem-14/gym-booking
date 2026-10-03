@@ -66,7 +66,7 @@ input,textarea{background:var(--bg2);color:var(--tx);border-radius:14px;padding:
 /* ===== КОНФИГ ===== */
 const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbws1g6JzvEz10AWq8iDEbgNpcabJ4olE9yYFDZT1WzC8z2OLSus4b56HHhDGMeSBqE8/exec'; // URL веб-приложения Google Apps Script (…/exec). Пусто = демо-режим с моковыми данными
 const BOT_USERNAME = 'FitNourishBot';
-const TRAINER_USERNAME = 'trubtex';
+const TRAINER_USERNAME = 'tema_crow';
 const SINGLE_PRICE = 2700;
 const CANCEL_LIMIT_H = 12;
 const TARIFFS = [
@@ -310,11 +310,9 @@ document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{hap.tap();go(
     S.profile=d.profile; S.busy=d.busy||{};
     S.loading=false; render();
   }catch(e){
-  \$app.innerHTML=`<div class="card text-center"><div class="font-extrabold">Не удалось загрузить данные</div>...`;
-}
+    $app.innerHTML=`<div class="card text-center"><div class="font-extrabold">Не удалось загрузить данные</div><div class="hint text-sm my-2">Проверьте соединение и повторите</div><button class="btn" onclick="location.reload()">Повторить</button></div>`;
+  }
 })();
-
-
 // синхронизация темы при смене
 tg?.onEvent?.('themeChanged',()=>render());
 </script>
