@@ -353,18 +353,34 @@ async function buy(id){
   const t=TARIFFS.find(x=>x.id===id);
   try{ 
     const r = await api('pay',{type:'package',tariff:id,amount:t.price}); 
+    
     if(r.error) {
       hap.err();
-      toast('Ошибка: ' + r.error); // Выведет точную причину с бэкенда
-    } else {
-      openPay(r.confirmation_url); 
+      toast('Ошибка: ' + r.error);
+      return;
     }
-  }
-  catch(e){ 
+    
+    if(!r.confirmation_url){ 
+      hap.err(); 
+      toast('Платёж не создан'); 
+      return; 
+    }
+    
+    // ИСПРАВЛЕННЫЙ БЛОК ОТКРЫТИЯ ССЫЛКИ ДЛЯ ТЕЛЕФОНА:
+    if (window.Telegram?.WebApp?.openLink) {
+      // Открывает встроенный безопасный браузер Telegram на смартфонах
+      window.Telegram.WebApp.openLink(r.confirmation_url); 
+    } else {
+      // Открывает вкладку, если запустили с компьютера
+      window.open(r.confirmation_url, '_blank'); 
+    }
+    
+  } catch(e){ 
     hap.err(); 
     toast('Сбой сети. Попробуйте позже'); 
   }
 }
+
 
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{hap.tap();go(b.dataset.t)});
 
