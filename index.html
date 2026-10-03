@@ -117,24 +117,28 @@ function updateBtn() {
 async function submit() {
   if (busy || !selSlot) return;
   if (!tg.initData) { tg.showAlert('Откройте приложение через Telegram-бота.'); return; }
-  busy = true; tg.MainButton.showProgress();
+  busy = true; 
+  
+  const commentText = (document.getElementById('comment') || {}).value || '';
+
+  // 1) Мгновенно закрываем окно Web App на телефоне, чтобы клиент не висел на экране загрузки
+  tg.close();
+
+  // 2) Отправляем запрос скрипту в фоновом режиме
   try {
-    const r = await fetch(API, {
+    fetch(API, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },   // без preflight CORS
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({
         action: 'book',
         initData: tg.initData,
         slotId: selSlot.id,
-        comment: (document.getElementById('comment') || {}).value || ''
+        comment: commentText
       })
     });
-    const d = await r.json();
-    if (d.ok) { tg.close(); }                // счёт уже отправлен в чат
-    else { tg.showAlert(d.error || 'Ошибка'); selSlot = null; await load(); }
   } catch (e) {
-    tg.showAlert('Нет связи. Попробуйте ещё раз.');
-  } finally { busy = false; tg.MainButton.hideProgress(); }
+    console.error('Ошибка фоновой отправки брони', e);
+  }
 }
 
 tg.MainButton.onClick(submit);
