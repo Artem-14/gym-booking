@@ -1,152 +1,320 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Запись на тренировку</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Фитнес-тренер</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: var(--tg-theme-bg-color, #fff);
-    --text: var(--tg-theme-text-color, #111);
-    --hint: var(--tg-theme-hint-color, #888);
-    --btn: var(--tg-theme-button-color, #2481cc);
-    --btn-text: var(--tg-theme-button-text-color, #fff);
-    --sec: var(--tg-theme-secondary-bg-color, #f1f1f4);
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; padding: 16px 16px 90px; background: var(--bg); color: var(--text);
-         font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  h1 { font-size: 20px; margin: 0 0 14px; }
-  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--hint); margin: 18px 0 8px; }
-  .row { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip { border: 0; border-radius: 12px; padding: 10px 14px; background: var(--sec); color: var(--text);
-          font: inherit; cursor: pointer; }
-  .chip.sel { background: var(--btn); color: var(--btn-text); }
-  .chip small { display: block; font-size: 12px; opacity: .75; }
-  textarea { width: 100%; min-height: 80px; border: 0; border-radius: 12px; padding: 12px; resize: none;
-             background: var(--sec); color: var(--text); font: inherit; }
-  .msg { color: var(--hint); padding: 24px 0; text-align: center; }
-  .btn { display: none; width: 100%; margin-top: 18px; border: 0; border-radius: 12px; padding: 14px;
-         background: var(--btn); color: var(--btn-text); font: inherit; font-weight: 600; }
+:root{
+  --bg:var(--tg-theme-bg-color,#fff);
+  --bg2:var(--tg-theme-secondary-bg-color,#f1f2f4);
+  --tx:var(--tg-theme-text-color,#111);
+  --hint:var(--tg-theme-hint-color,#8a8f98);
+  --ac:var(--tg-theme-button-color,#2a7de1);
+  --act:var(--tg-theme-button-text-color,#fff);
+  --link:var(--tg-theme-link-color,#2a7de1);
+  --danger:#e5484d; --ok:#2fb36d;
+}
+*{-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg2);color:var(--tx);font-family:'Manrope',system-ui,sans-serif}
+body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+.card{background:var(--bg);border-radius:20px;padding:16px}
+.hint{color:var(--hint)}
+.btn{background:var(--ac);color:var(--act);border-radius:16px;font-weight:700;padding:14px 18px;width:100%;transition:transform .12s,opacity .2s}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.4;pointer-events:none}
+.btn-ghost{background:var(--bg2);color:var(--tx)}
+.chip{border-radius:14px;background:var(--bg2);font-weight:700;transition:all .15s}
+.chip:active{transform:scale(.95)}
+.chip.on{background:var(--ac);color:var(--act)}
+.chip:disabled{opacity:.3;text-decoration:line-through;pointer-events:none}
+.hero{background:linear-gradient(135deg,var(--ac),color-mix(in srgb,var(--ac) 55%,#000));color:var(--act);border-radius:26px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.12)}
+.sk{background:linear-gradient(90deg,var(--bg2),color-mix(in srgb,var(--hint) 22%,var(--bg2)),var(--bg2));border-radius:14px;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.fade{animation:fadeIn .6s ease both}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(47,179,109,.5)}50%{box-shadow:0 0 0 10px rgba(47,179,109,0)}}
+.gift{background:color-mix(in srgb,var(--ok) 16%,var(--bg));color:var(--tx);border:1.5px solid var(--ok);border-radius:18px;animation:glow 2s infinite,fadeIn .6s ease both}
+.nav{position:fixed;left:0;right:0;bottom:0;background:var(--bg);padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));display:flex;gap:6px;border-top:1px solid color-mix(in srgb,var(--hint) 25%,transparent);z-index:10}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px;border-radius:14px;font-size:11px;font-weight:700;color:var(--hint)}
+.nav button span{font-size:20px}
+.nav button.on{color:var(--ac);background:color-mix(in srgb,var(--ac) 12%,transparent)}
+.days{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.days::-webkit-scrollbar{display:none}
+.day{flex:0 0 58px;padding:10px 0;text-align:center}
+.toast{position:fixed;left:50%;top:14px;transform:translate(-50%,-80px);background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:14px;font-weight:700;font-size:14px;transition:transform .3s;z-index:50;max-width:90%}
+.toast.show{transform:translate(-50%,0)}
+input,textarea{background:var(--bg2);color:var(--tx);border-radius:14px;padding:12px;width:100%;outline:none;font:inherit}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
 <body>
-<h1>📅 Запись на тренировку</h1>
-<div id="app"><div class="msg">Загрузка расписания…</div></div>
+<div id="toast" class="toast"></div>
+<main id="app" class="max-w-md mx-auto px-3 pt-3 space-y-3"></main>
+<nav class="nav max-w-md mx-auto" id="nav">
+  <button data-t="cab"><span>👤</span>Кабинет</button>
+  <button data-t="book"><span>📅</span>Запись</button>
+  <button data-t="plans"><span>💳</span>Тарифы</button>
+</nav>
 
 <script>
-/* ВСТАВЬТЕ СЮДА URL РАЗВЁРТЫВАНИЯ GOOGLE APPS SCRIPT (заканчивается на /exec) */
-const API = 'https://script.google.com/macros/s/AKfycbws1g6JzvEz10AWq8iDEbgNpcabJ4olE9yYFDZT1WzC8z2OLSus4b56HHhDGMeSBqE8/exec';
+'use strict';
+/* ===== КОНФИГ ===== */
+const BACKEND_URL = ''; // URL веб-приложения Google Apps Script (…/exec). Пусто = демо-режим с моковыми данными
+const BOT_USERNAME = 'your_bot';
+const TRAINER_USERNAME = 'your_trainer';
+const SINGLE_PRICE = 2700;
+const CANCEL_LIMIT_H = 12;
+const TARIFFS = [
+  {id:'test', name:'Тест-драйв', n:4,  price:10000, old:4*SINGLE_PRICE},
+  {id:'std',  name:'Стандарт',   n:10, price:24000, old:10*SINGLE_PRICE, top:true},
+  {id:'res',  name:'Результат',  n:20, price:45000, old:20*SINGLE_PRICE},
+];
 
-const tg = window.Telegram.WebApp;
-tg.ready(); tg.expand();
+/* ===== TELEGRAM ===== */
+const tg = window.Telegram?.WebApp;
+tg?.ready(); tg?.expand();
+const hap = {
+  tap:()=>tg?.HapticFeedback?.selectionChanged(),
+  hit:()=>tg?.HapticFeedback?.impactOccurred('light'),
+  ok:()=>tg?.HapticFeedback?.notificationOccurred('success'),
+  err:()=>tg?.HapticFeedback?.notificationOccurred('error'),
+};
 
-let slots = [], selDate = null, selSlot = null, busy = false;
+/* ===== МОСКОВСКОЕ ВРЕМЯ (UTC+3, без DST) ===== */
+const MSK = 3*3600e3;
+const p2 = n => String(n).padStart(2,'0');
+const mskNow = () => new Date(Date.now()+MSK);                     // читать только через getUTC*
+const ymd = d => `${d.getUTCFullYear()}-${p2(d.getUTCMonth()+1)}-${p2(d.getUTCDate())}`;
+const mskTs = (date,time) => Date.parse(`${date}T${time}:00+03:00`); // реальный timestamp слота
+const mskDayAt = i => new Date(mskNow().getTime()+i*864e5);
+const fmtDate = (date,opt) => new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Moscow',...opt}).format(new Date(mskTs(date,'12:00')));
+const hoursLeft = (date,time) => (mskTs(date,time)-Date.now())/3600e3;
+
+/* ===== API ===== */
+async function api(action, payload={}){
+  if(!BACKEND_URL) return mock(action,payload);
+  const initData = tg?.initData || '';
+  if(action==='init'){
+    const q = new URLSearchParams({action,initData,from:ymd(mskDayAt(0)),to:ymd(mskDayAt(6))});
+    const r = await fetch(`${BACKEND_URL}?${q}`); return r.json();
+  }
+  // text/plain — чтобы избежать CORS preflight в Google Apps Script
+  const r = await fetch(BACKEND_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,initData,...payload})});
+  return r.json();
+}
+function mock(action,pl){
+  return new Promise(res=>setTimeout(()=>{
+    if(action==='init'){
+      const d1=ymd(mskDayAt(1)), busy={};
+      for(let i=0;i<7;i++) busy[ymd(mskDayAt(i))]=['10:00','10:30','15:00','17:30'].filter((_,k)=>(k+i)%2===0);
+      res({profile:{name:'Анна Петрова',phone:'+7 999 123-45-67',email:'anna@example.com',balance:1,expires:ymd(mskDayAt(58)),isNew:true,refId:'48213',
+        next:{id:'b1',date:d1,time:'18:00',comment:'Силовая, акцент на спину'}},busy});
+    } else if(action==='pay') res({confirmation_url:'https://yookassa.ru/'});
+    else res({ok:true});
+  },1400));
+}
+
+/* ===== СОСТОЯНИЕ ===== */
+const S = {tab:'cab', loading:true, profile:null, busy:{}, dur:60, day:ymd(mskDayAt(0)), time:null, comment:'', busyBtn:false};
 const $app = document.getElementById('app');
-const DOW = ['вс','пн','вт','ср','чт','пт','сб'];
 
-function el(tag, cls, text) {
-  const e = document.createElement(tag);
-  if (cls) e.className = cls;
-  if (text !== undefined) e.textContent = text;
-  return e;
-}
-function fmtDay(iso) {
-  const [y, m, d] = iso.split('-').map(Number);
-  const dt = new Date(y, m - 1, d);
-  return { top: String(d).padStart(2,'0') + '.' + String(m).padStart(2,'0'), sub: DOW[dt.getDay()] };
+const sk = (h,w='100%') => `<div class="sk" style="height:${h}px;width:${w}"></div>`;
+function skeleton(){
+  if(S.tab==='cab') return `<div class="card space-y-3">${sk(22,'55%')}${sk(14,'40%')}${sk(14,'65%')}</div>${sk(150)}${sk(120)}${sk(90)}`;
+  if(S.tab==='book') return `${sk(48)}${sk(44)}<div class="flex gap-2">${[1,2,3,4,5].map(()=>sk(66,'58px')).join('')}</div><div class="grid grid-cols-4 gap-2">${Array(12).fill(sk(44)).join('')}</div>${sk(80)}`;
+  return [1,2,3].map(()=>sk(200)).join('');
 }
 
-async function load() {
-  try {
-    const r = await fetch(API + '?action=schedule');
-    const d = await r.json();
-    slots = d.slots || [];
-    if (selSlot && !slots.find(s => s.id === selSlot.id)) selSlot = null;
-    render();
-  } catch (e) {
-    $app.replaceChildren(el('div', 'msg', 'Не удалось загрузить расписание. Потяните вниз и откройте заново.'));
-  }
+/* ===== ВЬЮХИ ===== */
+function viewCab(){
+  const p=S.profile, n=p.next;
+  const left = n ? hoursLeft(n.date,n.time) : 0;
+  const canCancel = n && left>=CANCEL_LIMIT_H;
+  const nextDate = n ? fmtDate(n.date,{weekday:'long',day:'numeric',month:'long'}) : '';
+  return `
+  <section class="card fade">
+    <div class="text-xl font-extrabold">${esc(p.name)}</div>
+    <div class="hint text-sm mt-1">${esc(p.phone)}</div>
+    <div class="hint text-sm">${esc(p.email)}</div>
+  </section>
+
+  <section class="hero p-5 fade">
+    <div class="text-sm opacity-80 font-semibold">Осталось занятий</div>
+    <div class="font-extrabold leading-none mt-1" style="font-size:76px">${p.balance}</div>
+    ${p.balance>0
+      ? `<div class="text-sm opacity-90 mt-3 font-semibold">Абонемент действует до: ${fmtDate(p.expires,{day:'numeric',month:'long',year:'numeric'})}</div>`
+      : `<div class="fade mt-3 text-sm font-bold bg-white/20 rounded-xl px-3 py-2 inline-block">Баланс пуст. Пополните в тарифах</div>`}
+  </section>
+
+  ${p.isNew && p.balance===1 ? `<div class="gift p-4 font-bold text-sm">🎁 Вам доступна 1 бесплатная пробная тренировка!</div>`:''}
+
+  <section class="card fade">
+    <div class="font-extrabold mb-2">Ближайшая тренировка</div>
+    ${n ? `
+      <div class="text-lg font-bold">${nextDate}, ${n.time}</div>
+      ${n.comment?`<div class="hint text-sm mt-1">${esc(n.comment)}</div>`:''}
+      <button id="cancel" class="btn btn-ghost mt-3" ${canCancel?'':'disabled'} style="${canCancel?'color:var(--danger)':''}">Отмена</button>
+      ${canCancel?'':`<div class="hint text-xs mt-2">Отмена недоступна: до тренировки меньше ${CANCEL_LIMIT_H} часов</div>`}`
+    : `<div class="hint text-sm">Записей нет. Выберите время во вкладке «Запись».</div>`}
+  </section>
+
+  <section class="card fade">
+    <div class="font-extrabold">Приведи друга</div>
+    <div class="hint text-sm mt-1 mb-3">Отправьте ссылку: друг получит пробное занятие, а вы — бонус.</div>
+    <button id="share" class="btn">Поделиться ссылкой</button>
+  </section>
+
+  <button id="msg" class="btn btn-ghost">Написать тренеру</button>`;
 }
 
-function render() {
-  const keepComment = document.getElementById('comment') ? document.getElementById('comment').value : '';
-  $app.replaceChildren();
-  if (!slots.length) { $app.append(el('div', 'msg', 'Свободных слотов пока нет.')); updateBtn(); return; }
-
-  const dates = [...new Set(slots.map(s => s.date))];
-  if (!selDate || !dates.includes(selDate)) selDate = dates[0];
-
-  $app.append(el('h2', '', 'Дата'));
-  const dRow = el('div', 'row');
-  dates.forEach(d => {
-    const f = fmtDay(d);
-    const b = el('button', 'chip' + (d === selDate ? ' sel' : ''), f.top);
-    b.append(el('small', '', f.sub));
-    b.onclick = () => { selDate = d; selSlot = null; render(); };
-    dRow.append(b);
+function slotsFor(date){
+  // получасовые слоты 09:00–21:00 (последний старт зависит от длительности)
+  const need = S.dur/30, all=[];
+  for(let m=9*60; m<=21*60-S.dur; m+=30) all.push(`${p2(m/60|0)}:${p2(m%60)}`);
+  const busy = new Set(S.busy[date]||[]);
+  const step = t => { const [h,m]=t.split(':').map(Number), x=h*60+m+30; return `${p2(x/60|0)}:${p2(x%60)}` };
+  return all.map(t=>{
+    let free = mskTs(date,t) > Date.now()+30*60e3, c=t;
+    for(let i=0;i<need && free;i++){ if(busy.has(c)) free=false; c=step(c); }
+    return {t,free};
   });
-  $app.append(dRow);
+}
 
-  $app.append(el('h2', '', 'Время'));
-  const tRow = el('div', 'row');
-  slots.filter(s => s.date === selDate).forEach(s => {
-    const b = el('button', 'chip' + (selSlot && selSlot.id === s.id ? ' sel' : ''), s.time);
-    b.append(el('small', '', s.title + ' · ' + s.price + ' ₽'));
-    b.onclick = () => { selSlot = s; render(); };
-    tRow.append(b);
+function viewBook(){
+  const empty = S.profile.balance<=0;
+  const days = Array.from({length:7},(_,i)=>ymd(mskDayAt(i)));
+  const slots = slotsFor(S.day);
+  return `
+  <button id="topup" class="btn btn-ghost fade">Пополнить баланс</button>
+  <div class="card fade">
+    <div class="grid grid-cols-2 gap-2">
+      ${[[60,'1 час'],[90,'1.5 часа']].map(([v,l])=>`<button data-dur="${v}" class="chip py-3 ${S.dur===v?'on':''}">${l}</button>`).join('')}
+    </div>
+  </div>
+  <div class="days fade">
+    ${days.map(d=>`<button data-day="${d}" class="chip day ${S.day===d?'on':''}">
+      <div class="text-xs opacity-70">${fmtDate(d,{weekday:'short'})}</div>
+      <div class="text-xl font-extrabold">${fmtDate(d,{day:'numeric'})}</div>
+      <div class="text-xs opacity-70">${fmtDate(d,{month:'short'}).replace('.','')}</div></button>`).join('')}
+  </div>
+  <div class="card fade">
+    <div class="font-extrabold mb-3">Время (МСК)</div>
+    <div class="grid grid-cols-4 gap-2">
+      ${slots.map(s=>`<button data-time="${s.t}" ${s.free?'':'disabled'} class="chip py-3 text-sm ${S.time===s.t?'on':''}">${s.t}</button>`).join('')}
+    </div>
+  </div>
+  <textarea id="comment" rows="2" placeholder="Комментарий к бронированию">${esc(S.comment)}</textarea>
+  <button id="confirm" class="btn" style="padding:18px;font-size:16px" ${S.time&&!S.busyBtn?'':'disabled'}>
+    ${empty?`Оплатить и записаться (${SINGLE_PRICE.toLocaleString('ru-RU')} ₽)`:'Подтвердить запись'}</button>`;
+}
+
+function viewPlans(){
+  return TARIFFS.map(t=>{
+    const disc = Math.round((1-t.price/t.old)*100);
+    return `<section class="card fade ${t.top?'ring-2':''}" style="${t.top?'--tw-ring-color:var(--ac)':''}">
+      <div class="flex justify-between items-start">
+        <div><div class="text-xl font-extrabold">${t.name}</div><div class="hint text-sm">${t.n} занятий</div></div>
+        <div class="px-3 py-1 rounded-full text-sm font-extrabold" style="background:var(--ok);color:#fff">−${disc}%</div>
+      </div>
+      <div class="mt-3 flex items-baseline gap-2">
+        <span class="text-3xl font-extrabold">${t.price.toLocaleString('ru-RU')} ₽</span>
+        <span class="hint line-through text-sm">${t.old.toLocaleString('ru-RU')} ₽</span>
+      </div>
+      <div class="hint text-sm mt-1">${Math.round(t.price/t.n).toLocaleString('ru-RU')} ₽ за занятие</div>
+      <div class="hint text-xs mt-2">Срок действия пакета — 2 месяца (60 дней)</div>
+      <button data-buy="${t.id}" class="btn mt-3">Купить пакет</button>
+    </section>`;
+  }).join('');
+}
+
+/* ===== РЕНДЕР И СОБЫТИЯ ===== */
+function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function render(){
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===S.tab));
+  $app.innerHTML = S.loading ? skeleton() : ({cab:viewCab,book:viewBook,plans:viewPlans}[S.tab])();
+  if(!S.loading) bind();
+}
+function go(t){ S.tab=t; render(); window.scrollTo({top:0}); }
+const $ = s => $app.querySelector(s);
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2600)}
+
+function bind(){
+  $app.querySelectorAll('[data-dur]').forEach(b=>b.onclick=()=>{hap.tap();S.dur=+b.dataset.dur;S.time=null;render()});
+  $app.querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{hap.tap();S.day=b.dataset.day;S.time=null;render();$app.querySelector('.day.on')?.scrollIntoView({inline:'center',block:'nearest'})});
+  $app.querySelectorAll('[data-time]').forEach(b=>b.onclick=()=>{hap.hit();S.comment=$('#comment').value;S.time=b.dataset.time;render()});
+  $app.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{hap.hit();buy(b.dataset.buy)});
+  $('#comment')?.addEventListener('input',e=>S.comment=e.target.value);
+  $('#topup')?.addEventListener('click',()=>{hap.tap();go('plans')});
+  $('#confirm')?.addEventListener('click',confirmBooking);
+  $('#share')?.addEventListener('click',()=>{
+    hap.hit();
+    const link=`https://t.me/${BOT_USERNAME}?start=ref_${S.profile.refId}`;
+    const url=`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent('Иди тренироваться со мной! Первая тренировка — в подарок 🎁')}`;
+    tg?.openTelegramLink ? tg.openTelegramLink(url) : window.open(url,'_blank');
   });
-  $app.append(tRow);
-
-  $app.append(el('h2', '', 'Комментарий'));
-  const ta = el('textarea');
-  ta.id = 'comment'; ta.maxLength = 300; ta.placeholder = 'Пожелания тренеру (необязательно)';
-  ta.value = keepComment;
-  $app.append(ta);
-  updateBtn();
+  $('#msg')?.addEventListener('click',()=>{hap.tap();const u=`https://t.me/${TRAINER_USERNAME}`;tg?.openTelegramLink?tg.openTelegramLink(u):window.open(u,'_blank')});
+  $('#cancel')?.addEventListener('click',cancelBooking);
 }
 
-function updateBtn() {
-  if (selSlot) {
-    tg.MainButton.setText('Оформить · ' + selSlot.price + ' ₽');
-    tg.MainButton.show();
-  } else tg.MainButton.hide();
+async function cancelBooking(){
+  const n=S.profile.next;
+  if(!n||hoursLeft(n.date,n.time)<CANCEL_LIMIT_H) return;
+  const ok = tg?.showConfirm ? await new Promise(r=>tg.showConfirm('Отменить тренировку?',r)) : confirm('Отменить тренировку?');
+  if(!ok) return;
+  hap.hit();
+  try{ await api('cancel',{bookingId:n.id}); S.profile.next=null; S.profile.balance++; hap.ok(); toast('Запись отменена'); render(); }
+  catch(e){ hap.err(); toast('Не удалось отменить. Попробуйте ещё раз') }
 }
 
-async function submit() {
-  if (busy || !selSlot) return;
-  if (!tg.initData) { tg.showAlert('Откройте приложение через Telegram-бота.'); return; }
-  busy = true; 
-  
-  const commentText = (document.getElementById('comment') || {}).value || '';
+async function confirmBooking(){
+  if(!S.time||S.busyBtn) return;
+  S.busyBtn=true; $('#confirm').disabled=true;
+  try{
+    if(S.profile.balance<=0){
+      const r = await api('pay',{type:'single',amount:SINGLE_PRICE,date:S.day,time:S.time,duration:S.dur,comment:S.comment});
+      openPay(r.confirmation_url); return;
+    }
+    const r = await api('book',{date:S.day,time:S.time,duration:S.dur,comment:S.comment});
+    if(r.error) throw new Error(r.error);
+    (S.busy[S.day]??=[]);
+    for(let i=0;i<S.dur/30;i++){const m=+S.time.slice(0,2)*60+ +S.time.slice(3)+i*30;S.busy[S.day].push(`${p2(m/60|0)}:${p2(m%60)}`)}
+    S.profile.balance--; S.profile.isNew=false;
+    S.profile.next={id:r.id||'new',date:S.day,time:S.time,comment:S.comment};
+    S.time=null; S.comment=''; hap.ok(); toast('Вы записаны ✓'); go('cab');
+  }catch(e){ hap.err(); toast(e.message||'Не удалось записаться') }
+  finally{ S.busyBtn=false; if(S.tab==='book') render(); }
+}
 
-  // 1) Сначала отправляем запрос скрипту со ВСЕМИ данными авторизации Telegram
-  try {
-    fetch(API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        action: 'book',
-        initData: tg.initData,
-        slotId: selSlot.id,
-        comment: commentText
-      })
-    });
-  } catch (e) {
-    console.error('Ошибка фоновой отправки брони', e);
+async function buy(id){
+  const t=TARIFFS.find(x=>x.id===id);
+  try{ const r=await api('pay',{type:'package',tariff:id,amount:t.price}); openPay(r.confirmation_url); }
+  catch(e){ hap.err(); toast('Платёж не создан. Попробуйте позже') }
+}
+function openPay(url){
+  if(!url){ hap.err(); toast('Платёж не создан'); return; }
+  tg?.openLink ? tg.openLink(url) : window.open(url,'_blank');
+}
+
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{hap.tap();go(b.dataset.t)});
+
+/* ===== СТАРТ ===== */
+(async function init(){
+  render(); // скелетоны
+  try{
+    const d = await api('init');
+    S.profile=d.profile; S.busy=d.busy||{};
+    S.loading=false; render();
+  }catch(e){
+    $app.innerHTML=`<div class="card text-center"><div class="font-extrabold">Не удалось загрузить данные</div><div class="hint text-sm my-2">Проверьте соединение и повторите</div><button class="btn" onclick="location.reload()">Повторить</button></div>`;
   }
-
-  // 2) Даем браузеру телефона 150 миллисекунд, чтобы пакет железно улетел в сеть, и только потом закрываем Web App
-  setTimeout(() => {
-    busy = false;
-    tg.close();
-  }, 150);
-}
-
-
-tg.MainButton.onClick(submit);
-load();
+})();
+// синхронизация темы при смене
+tg?.onEvent?.('themeChanged',()=>render());
 </script>
 </body>
 </html>
