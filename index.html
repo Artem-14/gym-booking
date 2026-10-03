@@ -351,12 +351,19 @@ async function confirmBooking(){
 
 async function buy(id){
   const t=TARIFFS.find(x=>x.id===id);
-  try{ const r=await api('pay',{type:'package',tariff:id,amount:t.price}); openPay(r.confirmation_url); }
-  catch(e){ hap.err(); toast('Платёж не создан. Попробуйте позже') }
-}
-function openPay(url){
-  if(!url){ hap.err(); toast('Платёж не создан'); return; }
-  tg?.openLink ? tg.openLink(url) : window.open(url,'_blank');
+  try{ 
+    const r = await api('pay',{type:'package',tariff:id,amount:t.price}); 
+    if(r.error) {
+      hap.err();
+      toast('Ошибка: ' + r.error); // Выведет точную причину с бэкенда
+    } else {
+      openPay(r.confirmation_url); 
+    }
+  }
+  catch(e){ 
+    hap.err(); 
+    toast('Сбой сети. Попробуйте позже'); 
+  }
 }
 
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{hap.tap();go(b.dataset.t)});
