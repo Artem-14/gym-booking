@@ -100,7 +100,7 @@ async function api(action, payload={}){
   if(!BACKEND_URL) return mock(action,payload);
   const initData = tg?.initData || '';
   if(action==='init'){
-    const q = new URLSearchParams({action,initData,from:ymd(mskDayAt(0)),to:ymd(mskDayAt(6))});
+    const q = new URLSearchParams({action,initData,from:ymd(mskDayAt(0)),to:ymd(mskDayAt(13))});
     const r = await fetch(`${BACKEND_URL}?${q}`); return r.json();
   }
   // text/plain — чтобы избежать CORS preflight в Google Apps Script
@@ -221,7 +221,7 @@ function slotsFor(date) {
 
 function viewBook(){
   const empty = S.profile.balance<=0;
-  const days = Array.from({length:7},(_,i)=>ymd(mskDayAt(i)));
+  const days = Array.from({length:14},(_,i)=>ymd(mskDayAt(i)));
   const slots = slotsFor(S.day);
   return `
   <button id="topup" class="btn btn-ghost fade">Пополнить баланс</button>
