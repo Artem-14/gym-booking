@@ -275,7 +275,13 @@ function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t
 function bind(){
   $app.querySelectorAll('[data-dur]').forEach(b=>b.onclick=()=>{hap.tap();S.dur=+b.dataset.dur;S.time=null;render()});
   $app.querySelectorAll('[data-day]').forEach(b=>b.onclick=()=>{hap.tap();S.day=b.dataset.day;S.time=null;render();$app.querySelector('.day.on')?.scrollIntoView({inline:'center',block:'nearest'})});
-  $app.querySelectorAll('[data-time]').forEach(b=>b.onclick=()=>{hap.hit();S.comment=$('#comment').value;S.time=b.dataset.time;render()});
+  $app.querySelectorAll('[data-time]').forEach(b=>b.onclick=()=>{
+   hap.hit();
+   S.comment=$('#comment').value;
+   S.time=b.dataset.time;
+   S.slotId=b.dataset.id; // Дописываем эту строчку, чтобы запомнить ID
+   render();
+});
   $app.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{hap.hit();buy(b.dataset.buy)});
   $('#comment')?.addEventListener('input',e=>S.comment=e.target.value);
   $('#topup')?.addEventListener('click',()=>{hap.tap();go('plans')});
