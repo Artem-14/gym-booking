@@ -121,10 +121,7 @@ async function submit() {
   
   const commentText = (document.getElementById('comment') || {}).value || '';
 
-  // 1) Мгновенно закрываем окно Web App на телефоне, чтобы клиент не висел на экране загрузки
-  tg.close();
-
-  // 2) Отправляем запрос скрипту в фоновом режиме
+  // 1) Сначала отправляем запрос скрипту со ВСЕМИ данными авторизации Telegram
   try {
     fetch(API, {
       method: 'POST',
@@ -139,7 +136,14 @@ async function submit() {
   } catch (e) {
     console.error('Ошибка фоновой отправки брони', e);
   }
+
+  // 2) Даем браузеру телефона 150 миллисекунд, чтобы пакет железно улетел в сеть, и только потом закрываем Web App
+  setTimeout(() => {
+    busy = false;
+    tg.close();
+  }, 150);
 }
+
 
 tg.MainButton.onClick(submit);
 load();
