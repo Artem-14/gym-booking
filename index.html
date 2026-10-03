@@ -173,45 +173,50 @@ function viewCab(){
 }
 
 function slotsFor(date) {
-  // Фильтруем слоты из таблицы, которые соответствуют выбранной дате
-  const daySlots = S.scheduleSlots.filter(s => s.date === date);
-
-  // Сортируем по времени (на всякий случай, если в таблице они вразнобой)
-  daySlots.sort((a, b) => a.time.localeCompare(b.time));
-
-  // Переводим время ЧЧ:ММ в минуты от начала дня для расчетов
-  const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
-
-  const needMinutes = S.dur; // 60 или 90 минут
-  const needSlotsCount = S.dur / 30; // Нужно 2 или 3 последовательных получасовых слота
-
+  // Защита: если массив слотов пустой или еще не загрузился, создаем пустой массив, чтобы не было ошибок undefined
+  const slotsArray = S.scheduleSlots || [];
+  
+  // Фильтруем слоты, которые соответствуют выбранной дате
+  const daySlots = slotsArray.filter(s => s && s.date === date);
+  
+  // Сортируем по времени
+  daySlots.sort((a, b) => {
+    if (!a.time || !b.time) return 0;
+    return a.time.localeCompare(b.time);
+  });
+  
+  const toMin = t => { 
+    if (!t) return 0;
+    const [h, m] = t.split(':').map(Number); 
+    return (h || 0) * 60 + (m || 0); 
+  };
+  
+  const needSlotsCount = S.dur / 30; 
+  
   return daySlots.map((slot, index) => {
     let free = true;
-
-    // Проверяем, есть ли цепочка идущих подряд слотов для выбранной длительности
+    
     for (let i = 0; i < needSlotsCount; i++) {
       const currentChainSlot = daySlots[index + i];
-
-      // Если следующего слота в массиве нет — день закончился, записаться нельзя
       if (!currentChainSlot) { free = false; break; }
-
-      // Проверяем непрерывность: каждый следующий слот должен быть ровно через 30 минут от предыдущего
+      
       if (i > 0) {
         const prevChainSlot = daySlots[index + i - 1];
         if (toMin(currentChainSlot.time) - toMin(prevChainSlot.time) !== 30) {
           free = false;
-            break;
+          break;
         }
       }
     }
-
+    
     return {
-      t: slot.time,
-      id: slot.id,
+      t: slot.time || '',
+      id: slot.id || '',
       free: free
     };
   });
 }
+
 
 
 function viewBook(){
