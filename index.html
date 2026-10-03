@@ -120,7 +120,7 @@ function mock(action,pl){
 }
 
 /* ===== СОСТОЯНИЕ ===== */
-const S = {tab:'cab', loading:true, profile:null, busy:{}, dur:60, day:ymd(mskDayAt(0)), time:null, comment:'', busyBtn:false};
+const S = {tab:'cab', loading:true, profile:null, scheduleSlots:[], dur:60, day:ymd(mskDayAt(0)), time:null, slotId:null, comment:'', busyBtn:false};
 const $app = document.getElementById('app');
 
 const sk = (h,w='100%') => `<div class="sk" style="height:${h}px;width:${w}"></div>`;
