@@ -314,16 +314,34 @@ async function confirmBooking(){
       const r = await api('pay',{type:'single',amount:SINGLE_PRICE,date:S.day,time:S.time,duration:S.dur,comment:S.comment});
       openPay(r.confirmation_url); return;
     }
+    
+    // Отправляем бронь на бэкенд по ID слота
     const r = await api('book',{slotId: S.slotId, duration: S.dur/30, comment: S.comment});
     if(r.error) throw new Error(r.error);
-    (S.busy[S.day]??=[]);
-    for(let i=0;i<S.dur/30;i++){const m=+S.time.slice(0,2)*60+ +S.time.slice(3)+i*30;S.busy[S.day].push(`${p2(m/60|0)}:${p2(m%60)}`)}
-    S.profile.balance--; S.profile.isNew=false;
-    S.profile.next={id:r.id||'new',date:S.day,time:S.time,comment:S.comment};
-    S.time=null; S.comment=''; hap.ok(); toast('Вы записаны ✓'); go('cab');
+    
+    // ОЧИЩАЕМ СТАРУЮ ДЕМО-ЛОГИКУ, КОТОРАЯ ВЫЗЫВАЛА СБОЙ
+    S.time=null; 
+    S.slotId=null;
+    S.comment=''; 
+    
+    hap.ok(); 
+    toast('Вы записаны ✓'); 
+    
+    // Принудительно перезапускаем загрузку данных, чтобы фронтенд скачал свежие слоты из таблицы
+    S.loading=true; 
+    render();
+    
+    // Перезапрашиваем init(), чтобы обновить баланс в профиле и сетку времени
+    const d = await api('init');
+    S.profile=d.profile; 
+    S.scheduleSlots=d.scheduleSlots||[];
+    S.loading=false; 
+    
+    go('cab'); // Переключаем пользователя на главный экран Личного кабинета
   }catch(e){ hap.err(); toast(e.message||'Не удалось записаться') }
   finally{ S.busyBtn=false; if(S.tab==='book') render(); }
 }
+
 
 async function buy(id){
   const t=TARIFFS.find(x=>x.id===id);
