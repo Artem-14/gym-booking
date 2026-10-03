@@ -308,7 +308,7 @@ document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{hap.tap();go(
   render(); // скелетоны
   try{
     const d = await api('init');
-    S.profile=d.profile; S.slots=d.slots||[]; // ✅ НОВАЯ СТРОКА
+    S.profile=d.profile; S.busy=d.busy||{};
     S.loading=false; render();
   }catch(e){
     \$app.innerHTML=`<div class="card text-center"><div class="font-extrabold">Не удалось загрузить данные</div>...`;
