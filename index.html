@@ -172,18 +172,47 @@ function viewCab(){
   <button id="msg" class="btn btn-ghost">Написать тренеру</button>`;
 }
 
-function slotsFor(date){
-  // получасовые слоты 09:00–21:00 (последний старт зависит от длительности)
-  const need = S.dur/30, all=[];
-  for(let m=9*60; m<=21*60-S.dur; m+=30) all.push(`${p2(m/60|0)}:${p2(m%60)}`);
-  const busy = new Set(S.busy[date]||[]);
-  const step = t => { const [h,m]=t.split(':').map(Number), x=h*60+m+30; return `${p2(x/60|0)}:${p2(x%60)}` };
-  return all.map(t=>{
-    let free = mskTs(date,t) > Date.now()+30*60e3, c=t;
-    for(let i=0;i<need && free;i++){ if(busy.has(c)) free=false; c=step(c); }
-    return {t,free};
+function slotsFor(date) {
+  // Фильтруем слоты из таблицы, которые соответствуют выбранной дате
+  const daySlots = S.scheduleSlots.filter(s => s.date === date);
+
+  // Сортируем по времени (на всякий случай, если в таблице они вразнобой)
+  daySlots.sort((a, b) => a.time.localeCompare(b.time));
+
+  // Переводим время ЧЧ:ММ в минуты от начала дня для расчетов
+  const toMin = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+
+  const needMinutes = S.dur; // 60 или 90 минут
+  const needSlotsCount = S.dur / 30; // Нужно 2 или 3 последовательных получасовых слота
+
+  return daySlots.map((slot, index) => {
+    let free = true;
+
+    // Проверяем, есть ли цепочка идущих подряд слотов для выбранной длительности
+    for (let i = 0; i < needSlotsCount; i++) {
+      const currentChainSlot = daySlots[index + i];
+
+      // Если следующего слота в массиве нет — день закончился, записаться нельзя
+      if (!currentChainSlot) { free = false; break; }
+
+      // Проверяем непрерывность: каждый следующий слот должен быть ровно через 30 минут от предыдущего
+      if (i > 0) {
+        const prevChainSlot = daySlots[index + i - 1];
+        if (toMin(currentChainSlot.time) - toMin(prevChainSlot.time) !== 30) {
+          free = false;
+            break;
+        }
+      }
+    }
+
+    return {
+      t: slot.time,
+      id: slot.id,
+      free: free
+    };
   });
 }
+
 
 function viewBook(){
   const empty = S.profile.balance<=0;
