@@ -303,7 +303,6 @@ function openPay(url){
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{hap.tap();go(b.dataset.t)});
 
 /* ===== СТАРТ ===== */
-/* ===== СТАРТ ===== */
 (async function init(){
   render(); // скелетоны
   try{
@@ -311,8 +310,8 @@ document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{hap.tap();go(
     S.profile=d.profile; S.busy=d.busy||{};
     S.loading=false; render();
   }catch(e){
-    \$app.innerHTML=`<div class="card text-center"><div class="font-extrabold">Не удалось загрузить данные</div>...`;
-  }
+  \$app.innerHTML=`<div class="card text-center"><div class="font-extrabold">Не удалось загрузить данные</div>...`;
+}
 })();
 
 
