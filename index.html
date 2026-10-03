@@ -314,7 +314,7 @@ async function confirmBooking(){
       const r = await api('pay',{type:'single',amount:SINGLE_PRICE,date:S.day,time:S.time,duration:S.dur,comment:S.comment});
       openPay(r.confirmation_url); return;
     }
-    const r = await api('book',{date:S.day,time:S.time,duration:S.dur,comment:S.comment});
+    const r = await api('book',{slotId: S.slotId, duration: S.dur/30, comment: S.comment});
     if(r.error) throw new Error(r.error);
     (S.busy[S.day]??=[]);
     for(let i=0;i<S.dur/30;i++){const m=+S.time.slice(0,2)*60+ +S.time.slice(3)+i*30;S.busy[S.day].push(`${p2(m/60|0)}:${p2(m%60)}`)}
