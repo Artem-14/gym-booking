@@ -234,7 +234,7 @@ function viewBook(){
   <div class="card fade">
     <div class="font-extrabold mb-3">Время (МСК)</div>
     <div class="grid grid-cols-4 gap-2">
-      ${slots.map(s=>`<button data-time="${s.t}" ${s.free?'':'disabled'} class="chip py-3 text-sm ${S.time===s.t?'on':''}">${s.t}</button>`).join('')}
+      ${slots.map(s=>`<button data-time="${s.t}" data-id="${s.id}" ${s.free?'':'disabled'} class="chip py-3 text-sm ${S.time===s.t?'on':''}">${s.t}</button>`).join('')}
     </div>
   </div>
   <textarea id="comment" rows="2" placeholder="Комментарий к бронированию">${esc(S.comment)}</textarea>
