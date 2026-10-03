@@ -307,7 +307,7 @@ async function cancelBooking(){
   const ok = tg?.showConfirm ? await new Promise(r=>tg.showConfirm('Отменить тренировку?',r)) : confirm('Отменить тренировку?');
   if(!ok) return;
   hap.hit();
-  try{ await api('cancel',{bookingId:n.id}); S.profile.next=null; S.profile.balance++; hap.ok(); toast('Запись отменена'); render(); }
+  try{ await api('cancel',{bookingId:n.id}); S.profile.next=null; S.profile.balance++; hap.ok(); toast('Запись отменена ❌'); render(); }
   catch(e){ hap.err(); toast('Не удалось отменить. Попробуйте ещё раз') }
 }
 
