@@ -100,29 +100,7 @@ async function api(action, payload={}){
   if(!BACKEND_URL) return mock(action,payload);
   const initData = tg?.initData || '';
   if(action==='init'){
-    // --- БЛОК РАСШИФРОВКИ РЕФЕРАЛА ---
-    let refId = '';
-    try {
-      if (initData) {
-        const urlParams = new URLSearchParams(initData);
-        // Telegram прячет реферальный хвост "ref_123456" в параметр start_param
-        const startParam = urlParams.get('start_param') || ''; 
-        if (startParam.startsWith('ref_')) {
-          refId = startParam.replace('ref_', ''); // Оставляем только чистый ID цифрами
-        }
-      }
-    } catch(e) {
-      console.error('Ошибка чтения реферального ID:', e);
-    }
-    // ---------------------------------
-
-    const q = new URLSearchParams({
-      action,
-      initData,
-      from: ymd(mskDayAt(0)),
-      to: ymd(mskDayAt(13)),
-      refId: refId // Передаем ID пригласившего на бэкенд таблицы
-    });
+    const q = new URLSearchParams({action,initData,from:ymd(mskDayAt(0)),to:ymd(mskDayAt(13))});
     const r = await fetch(`${BACKEND_URL}?${q}`); return r.json();
   }
   // text/plain — чтобы избежать CORS preflight в Google Apps Script
@@ -140,7 +118,6 @@ function mock(action,pl){
     else res({ok:true});
   },1400));
 }
-
 
 /* ===== СОСТОЯНИЕ ===== */
 const S = {tab:'cab', loading:true, profile:null, scheduleSlots:[], dur:60, day:ymd(mskDayAt(0)), time:null, slotId:null, comment:'', busyBtn:false};
